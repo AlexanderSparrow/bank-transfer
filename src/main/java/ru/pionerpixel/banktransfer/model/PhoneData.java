@@ -1,8 +1,11 @@
 package ru.pionerpixel.banktransfer.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter @Setter
 @Table(name = "phone_data")
 public class PhoneData {
     @Id
