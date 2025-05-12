@@ -24,10 +24,14 @@ public class AuthController {
     private final AuthService authService;
 
 
-    @Operation(summary = "Login with email or phone", description = "Returns a JWT token if credentials are valid.")
+    @Operation(
+            summary = "Авторизация пользователя",
+            description = "Позволяет войти в систему по email или телефону с паролем. Возвращает JWT токен."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Token generated successfully"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            @ApiResponse(responseCode = "200", description = "Успешная авторизация, возвращён токен"),
+            @ApiResponse(responseCode = "400", description = "Неверный формат запроса"),
+            @ApiResponse(responseCode = "401", description = "Неверный логин или пароль")
     })
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest loginRequest) throws BadRequestException {

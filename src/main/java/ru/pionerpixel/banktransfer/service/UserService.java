@@ -3,12 +3,17 @@ package ru.pionerpixel.banktransfer.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pionerpixel.banktransfer.dto.EmailDto;
 import ru.pionerpixel.banktransfer.dto.PhoneDto;
 import ru.pionerpixel.banktransfer.dto.UserDto;
+import ru.pionerpixel.banktransfer.dto.UserSearchRequest;
 import ru.pionerpixel.banktransfer.mapper.UserMapper;
 import ru.pionerpixel.banktransfer.model.EmailData;
 import ru.pionerpixel.banktransfer.model.PhoneData;
@@ -16,6 +21,7 @@ import ru.pionerpixel.banktransfer.model.User;
 import ru.pionerpixel.banktransfer.repository.EmailDataRepository;
 import ru.pionerpixel.banktransfer.repository.PhoneDataRepository;
 import ru.pionerpixel.banktransfer.repository.UserRepository;
+import ru.pionerpixel.banktransfer.specification.UserSpecification;
 import ru.pionerpixel.banktransfer.utils.AuthUtils;
 
 import java.util.List;
@@ -35,6 +41,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
 
+    @Cacheable(value = "getMe", key = "#userId")
     public UserDto getMe(Long userId) {
         User user = getUserById(userId); //TODO
         return userMapper.toDto(user);
@@ -106,6 +113,21 @@ public class UserService {
         Long userId = authUtils.getCurrentUserId();
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+    }
+
+    @Cacheable(value = "UserSearch", key = "{" +
+            "#request.name, " +
+            "#request.email, " +
+            "#request.phone, " +
+            "#request.dateOfBirthAfter, " +
+            "#request.page, " +
+            "#request.size}"
+    )
+    public Page<UserDto> search(UserSearchRequest request) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Specification<User> spec = UserSpecification.build(request);
+
+        return userRepository.findAll(spec, pageable).map(userMapper::toDto);
     }
 }
 
