@@ -34,11 +34,11 @@ public class BalanceAccrualScheduler {
             if (next.compareTo(maxBalance) <= 0) {
                 account.setCurrentBalance(next);
                 updatedAccounts.add(account);
-                log.info("Баланс пользователя {} увеличился на 10%. Новый баланс: {}", account.getUser(), next);
+                log.info("Баланс пользователя {} увеличился на 10%. Новый баланс: {}", account.getUser().getName(), next);
             } else if (current.compareTo(maxBalance) < 0) {
                 account.setCurrentBalance(maxBalance);
                 updatedAccounts.add(account);
-                log.info("Баланс пользователя {} достиг максимума. Новый баланс: {}", account.getUser(), maxBalance);
+                log.info("Баланс пользователя {} достиг максимума. Новый баланс: {}", account.getUser().getName(), maxBalance);
             }
         }
 

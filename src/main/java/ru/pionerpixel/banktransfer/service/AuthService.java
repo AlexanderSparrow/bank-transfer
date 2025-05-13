@@ -1,11 +1,10 @@
 package ru.pionerpixel.banktransfer.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.pionerpixel.banktransfer.dto.LoginRequest;
+import ru.pionerpixel.banktransfer.exception.AppException;
 import ru.pionerpixel.banktransfer.model.User;
 import ru.pionerpixel.banktransfer.repository.UserRepository;
 import ru.pionerpixel.banktransfer.security.JwtTokenUtil;
@@ -18,18 +17,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
-    public String login(LoginRequest request) throws BadRequestException {
+    public String login(LoginRequest request) {
         Optional<User> userOpt = Optional.empty();
 
         if (request.getEmail() != null) {
             userOpt = userRepository.findByEmails_Email(request.getEmail());
         } else if (request.getPassword() != null) {
-            userOpt = userRepository.findByPhones_Phone(request.getPassword());
+            userOpt = userRepository.findByPhones_Phone(request.getPhone());
         }
 
-        User user = userOpt.orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден")); //TODO
+        User user = userOpt.orElseThrow(() -> new AppException("Пользователь не найден.", HttpStatus.NOT_FOUND));
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new BadRequestException("Неверный пароль");
+            throw new AppException("Неверный пароль", HttpStatus.FORBIDDEN);
         }
 
         return jwtTokenUtil.generateToken(user.getId());
