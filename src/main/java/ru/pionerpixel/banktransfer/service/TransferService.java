@@ -30,9 +30,9 @@ public class TransferService {
 
         validateTransfer(fromUserId, toUserId, amount);
 
-        Account fromAccount = accountRepository.findByUserIdWithLock(fromUserId)
+        Account fromAccount = accountRepository.findByUser_Id(fromUserId)
                 .orElseThrow(() -> new AppException("Аккаунт отправителя не найден", HttpStatus.NOT_FOUND));
-        Account toAccount = accountRepository.findByUserIdWithLock(toUserId)
+        Account toAccount = accountRepository.findByUser_Id(toUserId)
                 .orElseThrow(() -> new AppException("Аккаунт получателя не найден", HttpStatus.NOT_FOUND));
 
         // Принято проверять еще активность аккаунта, но такого поля нет в ТЗ
