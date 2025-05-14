@@ -35,7 +35,7 @@ public class AuthService {
 
         User user = userOpt.orElseThrow(() -> new AppException("Пользователь не найден.", HttpStatus.NOT_FOUND));
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new AppException("Неверный пароль", HttpStatus.FORBIDDEN);
+            throw new AppException("Неверный пароль", HttpStatus.BAD_REQUEST);
         }
 
         return jwtTokenUtil.generateToken(user.getId());

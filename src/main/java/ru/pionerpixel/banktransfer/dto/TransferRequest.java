@@ -3,13 +3,15 @@ package ru.pionerpixel.banktransfer.dto;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Data
-@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class TransferRequest {
     @NotNull
     private Long toUserId;
