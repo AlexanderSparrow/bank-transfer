@@ -17,6 +17,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
+    /**
+     * Авторизация в сервисе по связке телефон-пароль или email-пароль
+     *
+     * @param request - объект {@link LoginRequest} телефон (или email) и пароль
+     * @return - токен
+     */
+
     public String login(LoginRequest request) {
         Optional<User> userOpt = Optional.empty();
 

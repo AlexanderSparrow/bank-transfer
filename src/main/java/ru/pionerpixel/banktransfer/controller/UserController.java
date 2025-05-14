@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,7 +45,7 @@ public class UserController {
 
     @Operation(summary = "Удаление пользователем своего email")
     @DeleteMapping("/email")
-    public ResponseEntity<Void> deleteEmail(@Valid @RequestBody EmailDto dto) throws ChangeSetPersister.NotFoundException {//TODO
+    public ResponseEntity<Void> deleteEmail(@Valid @RequestBody EmailDto dto) {
         userService.deleteEmail(dto);
         return ResponseEntity.noContent().build();
     }
