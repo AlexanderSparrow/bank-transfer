@@ -1,16 +1,15 @@
 package ru.pionerpixel.banktransfer.scheduler;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.pionerpixel.banktransfer.model.Account;
 import ru.pionerpixel.banktransfer.repository.AccountRepository;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import ru.pionerpixel.banktransfer.service.BalanceUpdateService;
 
 @Slf4j
 @Component
@@ -18,33 +17,30 @@ import java.util.List;
 public class BalanceAccrualScheduler {
 
     private final AccountRepository accountRepository;
+    private final BalanceUpdateService balanceUpdateService;
 
-    @Scheduled(fixedRate = 30000)
-    @Transactional
+    @Scheduled(fixedRate = 30_000)
     public void accrueInterest() {
-        List<Account> accounts = accountRepository.findAll();
-        List<Account> updatedAccounts = new ArrayList<>();
+        int page = 0;
+        int size = 100;
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Account> accountPage;
 
-        for (Account account : accounts) {
-            BigDecimal initial = account.getInitialBalance();
-            BigDecimal maxBalance = initial.multiply(BigDecimal.valueOf(2.07));
-            BigDecimal current = account.getCurrentBalance();
-            BigDecimal next = current.multiply(BigDecimal.valueOf(1.1));
+        int updated = 0;
 
-            if (next.compareTo(maxBalance) <= 0) {
-                account.setCurrentBalance(next);
-                updatedAccounts.add(account);
-                log.info("Баланс пользователя {} увеличился на 10%. Новый баланс: {}", account.getUser().getName(), next);
-            } else if (current.compareTo(maxBalance) < 0) {
-                account.setCurrentBalance(maxBalance);
-                updatedAccounts.add(account);
-                log.info("Баланс пользователя {} достиг максимума. Новый баланс: {}", account.getUser().getName(), maxBalance);
+        do {
+            accountPage = accountRepository.findAll(pageable);
+            for (Account account : accountPage.getContent()) {
+                try {
+                    balanceUpdateService.update(account.getId());
+                    updated++;
+                } catch (Exception e) {
+                    log.warn("Ошибка при обновлении аккаунта {}: {}", account.getId(), e.getMessage());
+                }
             }
-        }
+            pageable = pageable.next();
+        } while (accountPage.hasNext());
 
-        if (!updatedAccounts.isEmpty()) {
-            accountRepository.saveAll(updatedAccounts);
-            log.info("Сохранено {} аккаунтов с обновленным балансом", updatedAccounts.size());
-        }
+        log.info("Обновлено {} аккаунтов", updated);
     }
 }
